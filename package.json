@@ -1,0 +1,29 @@
+{
+  "name": "passport-pki",
+  "version": "0.0.1",
+  "description": "Passport.js strategy for PKI client certificate authentication",
+  "main": "lib/passport-pki",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jwhitfieldseed/passport-pki"
+  },
+  "keywords": [
+    "pki",
+    "passport",
+    "ssl",
+    "authentication"
+  ],
+  "author": "Joe Whitfield-Seed",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jwhitfieldseed/passport-pki/issues"
+  },
+  "homepage": "https://github.com/jwhitfieldseed/passport-pki",
+  "dependencies": {
+    "passport": "^0.2.0"
+  }
+
+}
