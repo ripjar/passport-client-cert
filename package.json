@@ -4,7 +4,7 @@
   "description": "Passport.js strategy for PKI client certificate authentication",
   "main": "lib/passport-pki",
   "scripts": {
-    "test": "npm test"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -24,6 +24,9 @@
   "homepage": "https://github.com/jwhitfieldseed/passport-pki",
   "dependencies": {
     "passport": "^0.2.0"
+  },
+  "devDependencies": {
+    "chai": "^1.9.1",
+    "mocha": "^1.20.1"
   }
-
 }
