@@ -69,6 +69,49 @@ describe('Upstream PKI Strategy', function() {
       passedToVerify.should.eql({ h1: headers.h1, h2: headers.h2 });
     });
 
+    it('should succeed if the verify callback provided a user', function() {
+      strategy = new PkiStrategy(options, function(cert, done) {
+        done(null, {});
+      });
+
+      strategy.fail = function() { throw new Error('should not be called') };
+      strategy.success = strategy.error = function() { succeeded = true };
+      req = helpers.dummyReq(null, null, headers);
+
+      strategy.authenticate(req);
+      succeeded.should.eq(true);
+
+    });
+
+    it('should fail if the verify callback provided -false- instead of a user', function() {
+      strategy = new PkiStrategy(options, function(cert, done) {
+        done(null, false);
+      });
+
+      strategy.fail = function() { failed = true };
+      strategy.success = strategy.error = function() { throw new Error('should not be called')  };
+
+      req = helpers.dummyReq(null, null, headers);
+      strategy.authenticate(req);
+
+      failed.should.eq(true);
+    });
+
+    it('should error if the verify callback provided an error', function() {
+      strategy = new PkiStrategy(options, function(cert, done) {
+        done(new Error('error from verify'));
+      });
+
+      var ok = false;
+      strategy.error = function() { ok = true };
+      strategy.success = strategy.fail = function() { throw new Error('should not be called')  };
+
+      req = helpers.dummyReq(null, null, headers);
+      strategy.authenticate(req);
+
+      ok.should.eq(true);
+    });
+
   });
 
 });
