@@ -1,7 +1,7 @@
 /*
  * Stub the relevent parts of the request API
  */
-exports.dummyReq = function(authorized, cert) {
+exports.dummyReq = function(authorized, cert, headers) {
   return {
     client: {
       authorized: authorized
@@ -10,6 +10,7 @@ exports.dummyReq = function(authorized, cert) {
       getPeerCertificate: function() {
         return cert;
       }
-    }
+    },
+    headers: headers
   };
 };

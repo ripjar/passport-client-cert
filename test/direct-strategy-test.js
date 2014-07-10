@@ -1,14 +1,14 @@
 var chai = require('chai'),
     should = chai.should(),
-    PkiStrategy = require('../').Strategy,
+    PkiStrategy = require('../').DirectStrategy,
     helpers = require('./helpers');
 
-describe('Passport PKI Strategy', function() {
+describe('Direct PKI Strategy', function() {
 
   var strategy = new PkiStrategy(function() {});
 
-  it('should be named pki', function() {
-    strategy.name.should.equal('pki');
+  it('should be named pki-direct', function() {
+    strategy.name.should.equal('pki-direct');
   });
 
   it('should require a verify function', function() {
