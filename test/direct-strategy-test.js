@@ -20,14 +20,10 @@ describe('Direct PKI Strategy', function() {
       new PkiStrategy({});
     }).should.throw(Error);
 
+    // should not throw an error
     var f = function() {};
-    (function() {
-      new PkiStrategy(f);
-    }).should.not.throw(Error);
-
-    (function() {
-      new PkiStrategy({}, f);
-    }).should.not.throw(Error);
+    new PkiStrategy(f);
+    new PkiStrategy({}, f);
   });
 
   describe('strategy authenticating a request', function() {
@@ -36,6 +32,10 @@ describe('Direct PKI Strategy', function() {
         failed,
         succeeded,
         passedToVerify;
+
+    var fail = function() { failed = true },
+        success = function() { succeeded = true },
+        err = function() { throw new Error('should not be called') };
 
     beforeEach(function() {
       strategy = new PkiStrategy(function(cert, f) {
@@ -46,8 +46,8 @@ describe('Direct PKI Strategy', function() {
       succeeded = false;
       passedToVerify = null;
 
-      strategy.fail = function() { failed = true };
-      strategy.success = function() { succeeded = true };
+      strategy.fail = fail;
+      strategy.success = success;
     });
 
     it('should fail if the cert is not authorized', function() {
@@ -55,7 +55,6 @@ describe('Direct PKI Strategy', function() {
 
       strategy.authenticate(req);
       failed.should.eq(true);
-      succeeded.should.eq(false);
     });
 
     it('should fail if the cert is missing', function() {
@@ -63,7 +62,6 @@ describe('Direct PKI Strategy', function() {
 
       strategy.authenticate(req);
       failed.should.eq(true);
-      succeeded.should.eq(false);
     });
 
     it('should fail if the cert is empty', function() {
@@ -71,7 +69,6 @@ describe('Direct PKI Strategy', function() {
 
       strategy.authenticate(req);
       failed.should.eq(true);
-      succeeded.should.eq(false);
     });
 
     it('should pass the parsed cert to the verify callback', function() {
@@ -86,8 +83,8 @@ describe('Direct PKI Strategy', function() {
         done(null, {});
       });
 
-      strategy.fail = function() { throw new Error('should not be called') };
-      strategy.success = strategy.error = function() { succeeded = true };
+      strategy.success = success;
+      strategy.fail = strategy.error = err;
       req = helpers.dummyReq(true, cert);
 
       strategy.authenticate(req);
@@ -100,8 +97,8 @@ describe('Direct PKI Strategy', function() {
         done(null, false);
       });
 
-      strategy.fail = function() { failed = true };
-      strategy.success = strategy.error = function() { throw new Error('should not be called')  };
+      strategy.fail = fail;
+      strategy.success = strategy.error = err;
 
       req = helpers.dummyReq(true, cert);
       strategy.authenticate(req);
@@ -116,7 +113,7 @@ describe('Direct PKI Strategy', function() {
 
       var ok = false;
       strategy.error = function() { ok = true };
-      strategy.success = strategy.fail = function() { throw new Error('should not be called')  };
+      strategy.success = strategy.fail = err;
 
       req = helpers.dummyReq(true, cert);
       strategy.authenticate(req);
