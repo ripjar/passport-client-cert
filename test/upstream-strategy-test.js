@@ -20,9 +20,7 @@ describe('Upstream PKI Strategy', function() {
       new PkiStrategy({}, f);
     }).should.throw(Error);
 
-    (function() {
-      new PkiStrategy({ headers: ['something'] }, f);
-    }).should.not.throw(Error);
+    new PkiStrategy({ headers: ['something'] }, f);
   });
 
   describe('strategy authenticating a request', function() {
@@ -33,6 +31,10 @@ describe('Upstream PKI Strategy', function() {
         succeeded,
         passedToVerify;
 
+    var fail = function() { failed = true },
+        success = function() { succeeded = true },
+        err = function() { throw new Error('should not be called') };
+
     beforeEach(function() {
       strategy = new PkiStrategy(options, function(cert, f) {
         passedToVerify = cert;
@@ -42,8 +44,9 @@ describe('Upstream PKI Strategy', function() {
       succeeded = false;
       passedToVerify = null;
 
-      strategy.fail = function() { failed = true };
-      strategy.success = function() { succeeded = true };
+      strategy.fail = fail;
+      strategy.success = success;
+      strategy.error = err;
     });
 
     it('should fail if no headers are provided', function() {
@@ -51,7 +54,6 @@ describe('Upstream PKI Strategy', function() {
 
       strategy.authenticate(req);
       failed.should.eq(true);
-      succeeded.should.eq(false);
     });
 
     it('should fail if a subset of required headers are provided', function() {
@@ -59,7 +61,6 @@ describe('Upstream PKI Strategy', function() {
 
       strategy.authenticate(req);
       failed.should.eq(true);
-      succeeded.should.eq(false);
     });
 
     it('should pass extracted headers to the verify callback', function() {
@@ -74,8 +75,8 @@ describe('Upstream PKI Strategy', function() {
         done(null, {});
       });
 
-      strategy.fail = function() { throw new Error('should not be called') };
-      strategy.success = strategy.error = function() { succeeded = true };
+      strategy.fail = strategy.error = err;
+      strategy.success = success;
       req = helpers.dummyReq(null, null, headers);
 
       strategy.authenticate(req);
@@ -88,8 +89,8 @@ describe('Upstream PKI Strategy', function() {
         done(null, false);
       });
 
-      strategy.fail = function() { failed = true };
-      strategy.success = strategy.error = function() { throw new Error('should not be called')  };
+      strategy.fail = fail;
+      strategy.success = strategy.error = err;
 
       req = helpers.dummyReq(null, null, headers);
       strategy.authenticate(req);
@@ -104,7 +105,7 @@ describe('Upstream PKI Strategy', function() {
 
       var ok = false;
       strategy.error = function() { ok = true };
-      strategy.success = strategy.fail = function() { throw new Error('should not be called')  };
+      strategy.success = strategy.fail = err;
 
       req = helpers.dummyReq(null, null, headers);
       strategy.authenticate(req);

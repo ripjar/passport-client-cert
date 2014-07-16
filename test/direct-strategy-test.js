@@ -48,6 +48,7 @@ describe('Direct PKI Strategy', function() {
 
       strategy.fail = fail;
       strategy.success = success;
+      strategy.error = err;
     });
 
     it('should fail if the cert is not authorized', function() {
