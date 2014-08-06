@@ -1,7 +1,27 @@
 #!/bin/sh
 # Do not follow these steps to create production certs!
 
-rm *.{crt,key,csr}
+function create_user
+{
+user="$@"
+openssl genrsa -out ${user}.key 1024
+openssl req -new -key ${user}.key -out ${user}.csr <<END
+.
+.
+.
+.
+.
+${user}
+.
+.
+
+END
+openssl x509 -req -in ${user}.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out ${user}.crt
+}
+
+cd $(dirname $0)
+rm *.{crt,key,csr,srl} 2> /dev/null
+
 
 # Self-signed CA key/cert
 openssl genrsa -out ca.key 2048
@@ -31,30 +51,11 @@ END
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt
 
 # Client key/cert for user 'joe'
-openssl genrsa -out joe.key 1024
-openssl req -new -key joe.key -out joe.csr <<END
-.
-.
-.
-.
-.
-joe
-.
-.
+create_user "joe"
 
-END
-openssl x509 -req -in joe.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out joe.crt
+# Client key/cert for user 'bob', who is not in the example users list
+create_user "bob"
 
-# Self-signed certificate - should fail authentiation
-#openssl genrsa -out bad_client.key 1024
-#openssl req -new -key bad_client.key -out bad_client.csr <<END
-#.
-#.
-#.
-#.
-#.
-#bad client
-#.
-#.
-#END
-#openssl x509 -req -in bad_client.csr -signkey bad_client.key -out bad_client.crt
+
+# Return to previous working dir
+cd -

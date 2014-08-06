@@ -15,8 +15,8 @@ var users = ['joe', 'amy'];
  * Dummy user lookup method - simulates database lookup
  */
 function lookupUser(cn, done) {
-  var user = ['amy', 'joe'].indexOf(cn) >= 0 ? cn : null;
-  done(null, { username: cn });
+  var user = ['amy', 'joe'].indexOf(cn) >= 0 ? { username: cn } : null;
+  done(null, user);
 }
 
 /**
@@ -72,9 +72,14 @@ app.use(express.errorHandler());
 
 passport.use(new PkiStrategy(authenticate));
 
-// curl on OSX does not successfully pass throug the client certificate.
-// Equivalent wget command:
-// wget -q -O - --no-check-certificate --certificate=ssl/client.crt --private-key=ssl/client.key --ca-directory=ssl https://localhost:3443/b
+// Test curl command:
+//
+// curl on OSX Mavericks has broken --cacert: http://curl.haxx.se/mail/archive-2013-10/0036.html
+// If this does not affect you:
+// $ curl -k --cert ssl/joe.crt --key ssl/joe.key --cacert ssl/ca.crt https://localhost:3443
+//
+// If it does, equivalent wget command:
+// $ wget -q -O - --no-check-certificate --certificate=ssl/client.crt --private-key=ssl/client.key --ca-directory=ssl https://localhost:3443/b
 app.get('/',
   passport.authenticate('pki-direct', { session: false }),
   function(req, res) {
