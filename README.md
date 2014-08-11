@@ -2,11 +2,30 @@
 
 [passport.js](http://passportjs.org/) strategy for client certificate authentication.
 
-## TODO
+passport-pki provides two strategies:
 
- * Upstream strategy example
- * Integration test
- * Docs
+## Direct strategy
+`DirectPkiStrategy` works for SSL connections direct to Node.js. It requires a verify callback, which is used to check the certificate and authenticate the identified user.
+
+The verify callback is provided with the client certificate and a `done` callback. The `done` callback must be called as per the [passport.js documentation](http://passportjs.org/guide/configure/).
+
+````javascript
+passport.use(new PkiStrategy(function(clientCert, done) {
+  var cn = clientCert.subject.cn,
+      user = null;
+      
+  // The CN will typically be checked against a database
+  if(cn === 'test-cn') {
+    user = { name: 'Test User' }
+  }
+  
+  done(null, user);
+}));
+````
+
+## Usage
+
+###
 
 ## Test
 
