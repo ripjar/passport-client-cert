@@ -1,13 +1,13 @@
 # passport-client-cert
 
-[passport.js](http://passportjs.org/) strategy for TLS client certificate authentication.
+[passport.js](http://passportjs.org/) strategy for TLS client certificate authentication and authorisation.
 
 passport-client-cert is for TLS connections direct to a Node.js application.
 
 ## Usage
-The `ClientCertStrategy` constructor requires a verify callback, which is used to check the certificate and authenticate the identified user.
+The strategy constructor requires a verify callback, which will be executed on each authenticated request. It is responsible for checking the validity of the certificate and user authorisation.
 
-The verify callback is provided with the client certificate and a `done` callback. The `done` callback must be called as per the [passport.js documentation](http://passportjs.org/guide/configure/).
+The verify callback is passed with the [client certificate object](https://nodejs.org/api/tls.html#tls_tlssocket_getpeercertificate_detailed) and a `done` callback. The `done` callback must be called as per the [passport.js documentation](http://passportjs.org/guide/configure/).
 
 ````javascript
 var passport = require('passport');
