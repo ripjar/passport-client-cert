@@ -1,5 +1,7 @@
 # passport-client-cert
 
+[![Build](https://travis-ci.org/ripjar/passport-client-cert.svg?branch=master)](https://travis-ci.org/ripjar/passport-client-cert)
+
 [passport.js](http://passportjs.org/) strategy for TLS client certificate authentication and authorisation.
 
 passport-client-cert is for TLS connections direct to a Node.js application.
