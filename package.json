@@ -1,27 +1,30 @@
 {
-  "name": "passport-pki",
+  "name": "passport-client-cert",
   "version": "0.0.1",
-  "description": "Passport.js strategy for PKI client certificate authentication",
-  "main": "lib/passport-pki",
+  "description": "Passport.js strategy for TLS client certificate authentication",
+  "main": "src",
   "scripts": {
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/jwhitfieldseed/passport-pki"
+    "url": "https://github.com/ripjar/passport-client-cert"
   },
   "keywords": [
     "pki",
     "passport",
     "ssl",
+    "tls",
+    "certificate",
+    "cert",
     "authentication"
   ],
   "author": "Joe Whitfield-Seed",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jwhitfieldseed/passport-pki/issues"
+    "url": "https://github.com/ripjar/passport-client-cert/issues"
   },
-  "homepage": "https://github.com/jwhitfieldseed/passport-pki",
+  "homepage": "https://github.com/ripjar/passport-client-cert",
   "dependencies": {
     "passport": "^0.2.0"
   },

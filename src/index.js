@@ -2,23 +2,23 @@ var util = require('util'),
     passport = require('passport');
 
 /*
- * passport.js SSL client certificate strategy
+ * passport.js TLS client certificate strategy
  */
-function DirectStrategy(options, verify) {
+function ClientCertStrategy(options, verify) {
   if (typeof options == 'function') {
     verify = options;
     options = {};
   }
-  if (!verify) throw new Error('PKI authentication strategy requires a verify function');
+  if (!verify) throw new Error('Client cert authentication strategy requires a verify function');
 
   passport.Strategy.call(this);
-  this.name = 'pki-direct';
+  this.name = 'client-cert';
   this._verify = verify;
 }
 
-util.inherits(DirectStrategy, passport.Strategy);
+util.inherits(ClientCertStrategy, passport.Strategy);
 
-DirectStrategy.prototype.authenticate = function(req, options) {
+ClientCertStrategy.prototype.authenticate = function(req, options) {
   var that = this;
 
   // Requests must be authorized
@@ -42,4 +42,4 @@ DirectStrategy.prototype.authenticate = function(req, options) {
   }
 };
 
-exports.Strategy = DirectStrategy;
+exports.Strategy = ClientCertStrategy;

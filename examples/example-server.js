@@ -4,7 +4,7 @@ var express = require('express'),
     fs = require('fs');
 
 var passport = require('passport'),
-    PkiStrategy = require('../lib/passport-pki').DirectStrategy;
+    ClientCertStrategy = require('../').Strategy;
 
 require('colors');
 
@@ -15,7 +15,7 @@ var users = ['joe', 'amy'];
  * Dummy user lookup method - simulates database lookup
  */
 function lookupUser(cn, done) {
-  var user = ['amy', 'joe'].indexOf(cn) >= 0 ? { username: cn } : null;
+  var user = users.indexOf(cn) >= 0 ? { username: cn } : null;
   done(null, user);
 }
 
@@ -53,9 +53,9 @@ function authenticate(cert, done) {
 
 
 var options = {
-  key: fs.readFileSync("./ssl/server.key"),
-  cert: fs.readFileSync("./ssl/server.crt"),
-  ca: fs.readFileSync("./ssl/ca.crt"),
+  key: fs.readFileSync("./certs/server.key"),
+  cert: fs.readFileSync("./certs/server.crt"),
+  ca: fs.readFileSync("./certs/ca.crt"),
   requestCert: true,
   rejectUnauthorized: false
 };
@@ -70,18 +70,16 @@ app.use(passport.initialize());
 app.use(app.router);
 app.use(express.errorHandler());
 
-passport.use(new PkiStrategy(authenticate));
+passport.use(new ClientCertStrategy(authenticate));
 
 // Test curl command:
-//
-// curl on OSX Mavericks has broken --cacert: http://curl.haxx.se/mail/archive-2013-10/0036.html
-// If this does not affect you:
-// $ curl -k --cert ssl/joe.crt --key ssl/joe.key --cacert ssl/ca.crt https://localhost:3443
-//
-// If it does, equivalent wget command:
-// $ wget -q -O - --no-check-certificate --certificate=ssl/client.crt --private-key=ssl/client.key --ca-directory=ssl https://localhost:3443/b
+// $ curl -k --cert certs/joe.crt --key certs/joe.key --cacert certs/ca.crt https://localhost:3443
+
+// curl on OSX Mavericks and newer has broken --cacert: http://curl.haxx.se/mail/archive-2013-10/0036.html
+// If this affacets you, equivalent wget command:
+// wget -qSO - --no-check-certificate --certificate=certs/joe.crt --private-key=certs/joe.key --ca-certificate=certs/ca.crt https://localhost:3443/
 app.get('/',
-  passport.authenticate('pki-direct', { session: false }),
+  passport.authenticate('client-cert', { session: false }),
   function(req, res) {
     res.json(req.user);
   });
