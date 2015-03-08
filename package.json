@@ -1,6 +1,6 @@
 {
   "name": "passport-client-cert",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Passport.js strategy for TLS client certificate authentication",
   "main": "src",
   "scripts": {
@@ -26,9 +26,10 @@
   },
   "homepage": "https://github.com/ripjar/passport-client-cert",
   "dependencies": {
-    "passport": "^0.2.0"
+    "passport-strategy": "1.*"
   },
   "devDependencies": {
+    "passport": "^0.2.0",
     "chai": "^1.9.1",
     "colors": "^0.6.2",
     "express": "3.*",

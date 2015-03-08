@@ -1,5 +1,5 @@
 var util = require('util'),
-    passport = require('passport');
+    Strategy = require('passport-strategy');
 
 /*
  * passport.js TLS client certificate strategy
@@ -11,12 +11,12 @@ function ClientCertStrategy(options, verify) {
   }
   if (!verify) throw new Error('Client cert authentication strategy requires a verify function');
 
-  passport.Strategy.call(this);
+  Strategy.call(this);
   this.name = 'client-cert';
   this._verify = verify;
 }
 
-util.inherits(ClientCertStrategy, passport.Strategy);
+util.inherits(ClientCertStrategy, Strategy);
 
 ClientCertStrategy.prototype.authenticate = function(req, options) {
   var that = this;
