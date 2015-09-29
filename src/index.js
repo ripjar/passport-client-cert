@@ -14,6 +14,7 @@ function ClientCertStrategy(options, verify) {
   Strategy.call(this);
   this.name = 'client-cert';
   this._verify = verify;
+  this._passReqToCallback = options.passReqToCallback;
 }
 
 util.inherits(ClientCertStrategy, Strategy);
@@ -33,11 +34,17 @@ ClientCertStrategy.prototype.authenticate = function(req, options) {
       that.fail();
     } else {
 
-      this._verify(clientCert, function(err, user) {
+      var verified = function verified(err, user) {
         if (err) { return that.error(err); }
         if (!user) { return that.fail(); }
         that.success(user);
-      });
+      };
+
+      if (this._passReqToCallback) {
+        this._verify(req, clientCert, verified);
+      } else {
+        this._verify(clientCert, verified);
+      }
     }
   }
 };
