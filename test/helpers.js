@@ -3,13 +3,11 @@
  */
 exports.dummyReq = function(authorized, cert, headers) {
   return {
-    client: {
-      authorized: authorized
-    },
-    connection: {
+    socket: {
       getPeerCertificate: function() {
         return cert;
-      }
+      },
+      authorized: authorized
     },
     headers: headers
   };
