@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var http = require('http');
 var https = require('https');
 var connect = require('connect');
 var request = require('request');
@@ -7,7 +8,8 @@ var passport = require('passport');
 var assert = require("chai").assert;
 var ClientCertStrategy = require('..').Strategy;
 
-var PORT = 3433;
+var HTTPS_PORT = 3433;
+var HTTP_PORT = 3080;
 
 var clientKey = fs.readFileSync(path.join(__dirname, 'data', 'ann.key'));
 var clientCert = fs.readFileSync(path.join(__dirname, 'data', 'ann.crt'));
@@ -28,8 +30,12 @@ var httpsSettings = {
 describe('Client cert strategy integration', function() {
   var server;
 
-  function createServer(app, done) {
-    server = https.createServer(httpsSettings, app).listen(PORT, done);
+  function createHttpsServer(app, done) {
+    server = https.createServer(httpsSettings, app).listen(HTTPS_PORT, done);
+  }
+
+  function createHttpServer(app, done) {
+    server = http.createServer(app).listen(HTTP_PORT, done);
   }
 
   afterEach(function(done) {
@@ -40,7 +46,7 @@ describe('Client cert strategy integration', function() {
   describe('handling a request with a valid client cert', function() {
     var validRequestOptions = {
       hostname: 'localhost',
-      url: 'https://localhost:' + PORT,
+      url: 'https://localhost:' + HTTPS_PORT,
       path: '/',
       method: 'GET',
       key: clientKey,
@@ -87,7 +93,7 @@ describe('Client cert strategy integration', function() {
         res.end(JSON.stringify(req.user));
       });
 
-      createServer(app, function() {
+      createHttpsServer(app, function() {
         request.get(validRequestOptions, function(err, res) {
           assert.equal(res.statusCode, 200);
           assert.deepEqual(res.body, '{"cn":"ann"}');
@@ -102,7 +108,7 @@ describe('Client cert strategy integration', function() {
   describe('handling a request with no client cert', function() {
     var noCertRequestOptions = {
       hostname: 'localhost',
-      url: 'https://localhost:' + PORT,
+      url: 'https://localhost:' + HTTPS_PORT,
       path: '/',
       method: 'GET',
       ca: caCert // don't error when request encounters the server's self-signed cert
@@ -125,8 +131,44 @@ describe('Client cert strategy integration', function() {
         res.end();
       });
 
-      createServer(app, function() {
+      createHttpsServer(app, function() {
         request.get(noCertRequestOptions, function(err, res, c) {
+          assert.equal(res.statusCode, 401);
+          done();
+        })
+      });
+    });
+
+  });
+
+  describe('handling a http request', function() {
+    var httpRequestOptions = {
+      hostname: 'localhost',
+      url: 'http://localhost:' + HTTP_PORT,
+      path: '/',
+      method: 'GET',
+    }
+
+    it('rejects authorization without calling the verify callback', function(done) {
+      var app = connect();
+
+      var strategy = new ClientCertStrategy(function(cert, done) {
+        assert.fail(); // should not be called
+        done();
+      });
+
+      passport.use(strategy);
+      app.use(passport.initialize());
+      app.use(passport.authenticate('client-cert', { session: false }))
+
+      app.use(function(req, res) {
+        assert.fail(); // should not be called
+        res.end();
+      });
+
+      createHttpServer(app, function() {
+        request.get(httpRequestOptions, function(err, res, c) {
+          console.log(err);
           assert.equal(res.statusCode, 401);
           done();
         })
