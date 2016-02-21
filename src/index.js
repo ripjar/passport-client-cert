@@ -24,7 +24,7 @@ ClientCertStrategy.prototype.authenticate = function(req, options) {
 
   // Requests must be authorized
   // (i.e. the certificate must be signed by at least one trusted CA)
-  if(!req.client.authorized) {
+  if(!req.client || !req.client.authorized) {
     that.fail();
   } else {
     var clientCert = req.connection.getPeerCertificate();
