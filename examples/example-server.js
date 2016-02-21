@@ -1,15 +1,19 @@
-var express = require('express'),
-    https = require('https'),
-    path = require('path'),
-    fs = require('fs');
-
-var passport = require('passport'),
-    ClientCertStrategy = require('../').Strategy;
-
+var fs = require('fs');
+var path = require('path');
+var https = require('https');
+var connect = require('connect');
+var passport = require('passport');
 require('colors');
 
+var ClientCertStrategy = require('../').Strategy;
+
+var PORT = 3443;
+
 // A list of valid user IDs
-var users = ['joe', 'amy'];
+// test/data contains certs for users bob and ann.
+// Ann is in the list, so requests with that key/cert will be authorized.
+// Bob is not in the list, so requests will not be authorized.
+var users = ['ann'];
 
 /*
  * Dummy user lookup method - simulates database lookup
@@ -25,8 +29,8 @@ function lookupUser(cn, done) {
  *    to the certificate's Common Name attribute).
  */
 function authenticate(cert, done) {
-  var subject = cert.subject,
-      msg = 'Attempting PKI authentication';
+  var subject = cert.subject;
+  var msg = 'Attempting PKI authentication';
 
   if(!subject) {
     console.log(msg + ' ✘ - no subject'.red);
@@ -51,41 +55,31 @@ function authenticate(cert, done) {
   }
 }
 
+var certDir = path.join(__dirname, '..', 'test', 'data');
 
 var options = {
-  key: fs.readFileSync("./certs/server.key"),
-  cert: fs.readFileSync("./certs/server.crt"),
-  ca: fs.readFileSync("./certs/ca.crt"),
+  key: fs.readFileSync(path.join(certDir, 'server.key')),
+  cert: fs.readFileSync(path.join(certDir, 'server.crt')),
+  ca: fs.readFileSync(path.join(certDir, 'ca.crt')),
   requestCert: true,
   rejectUnauthorized: false
 };
 
-var app = express();
-
-app.set('port', process.env.PORT || 3443);
-
-app.use(express.logger('dev'));
-app.use(express.json());
-app.use(passport.initialize());
-app.use(app.router);
-app.use(express.errorHandler());
-
 passport.use(new ClientCertStrategy(authenticate));
 
+var app = connect();
+app.use(passport.initialize());
+app.use(passport.authenticate('client-cert', { session: false }));
+app.use(function(req, res) {
+  res.end(JSON.stringify(req.user));
+});
+
 // Test curl command:
-// $ curl -k --cert certs/joe.crt --key certs/joe.key --cacert certs/ca.crt https://localhost:3443
+// $ curl -k --cert test/data/ann.crt --key test/data/ann.key --cacert test/data/ca.crt https://localhost:3443
 
 // curl on OSX Mavericks and newer has broken --cacert: http://curl.haxx.se/mail/archive-2013-10/0036.html
 // If this affacets you, equivalent wget command:
-// wget -qSO - --no-check-certificate --certificate=certs/joe.crt --private-key=certs/joe.key --ca-certificate=certs/ca.crt https://localhost:3443/
-app.get('/',
-  passport.authenticate('client-cert', { session: false }),
-  function(req, res) {
-    res.json(req.user);
-  });
-
-
-https.createServer(options, app).listen(app.get('port'), function() {
-  console.log('Express server listening on port ' + app.get('port'));
-
+// wget -qSO - --no-check-certificate --certificate=test/data/ann.crt --private-key=test/data/ann.key --ca-certificate=test/data/ca.crt https://localhost:3443/
+https.createServer(options, app).listen(PORT, function() {
+  console.log('Server listening on port ' + PORT);
 });
