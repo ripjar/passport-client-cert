@@ -27,7 +27,7 @@ var httpsSettings = {
   rejectUnauthorized: false
 };
 
-describe('Client cert strategy integration', function() {
+describe('Client cert strategy integration', function () {
   var server;
 
   function createHttpsServer(app, done) {
@@ -38,12 +38,12 @@ describe('Client cert strategy integration', function() {
     server = http.createServer(app).listen(HTTP_PORT, done);
   }
 
-  afterEach(function(done) {
+  afterEach(function (done) {
     server.close(done);
     server = null;
   })
 
-  describe('handling a request with a valid client cert', function() {
+  describe('handling a request with a valid client cert', function () {
     var validRequestOptions = {
       hostname: 'localhost',
       url: 'https://localhost:' + HTTPS_PORT,
@@ -54,10 +54,10 @@ describe('Client cert strategy integration', function() {
       ca: caCert
     }
 
-    it('passes the certificate to the verify callback', function(done) {
+    it('passes the certificate to the verify callback', function (done) {
       var app = connect();
 
-      var strategy = new ClientCertStrategy(function(cert, done) {
+      var strategy = new ClientCertStrategy(function (cert, done) {
         assert.strictEqual(cert.fingerprint,
           '17:2C:6E:88:E8:F3:6F:41:C7:3A:FE:6D:35:3E:7E:AA:09:09:E4:5B')
 
@@ -81,20 +81,24 @@ describe('Client cert strategy integration', function() {
           emailAddress: 'ca@example.com'
         })
 
-        done(null, { cn: cert.subject.CN })
+        done(null, {
+          cn: cert.subject.CN
+        })
       });
 
       passport.use(strategy);
       app.use(passport.initialize());
-      app.use(passport.authenticate('client-cert', { session: false }))
+      app.use(passport.authenticate('client-cert', {
+        session: false
+      }))
 
-      app.use(function(req, res) {
+      app.use(function (req, res) {
         assert.isTrue(req.isAuthenticated());
         res.end(JSON.stringify(req.user));
       });
 
-      createHttpsServer(app, function() {
-        request.get(validRequestOptions, function(err, res) {
+      createHttpsServer(app, function () {
+        request.get(validRequestOptions, function (err, res) {
           assert.equal(res.statusCode, 200);
           assert.deepEqual(res.body, '{"cn":"ann"}');
           done();
@@ -105,7 +109,7 @@ describe('Client cert strategy integration', function() {
 
   });
 
-  describe('handling a request with no client cert', function() {
+  describe('handling a request with no client cert', function () {
     var noCertRequestOptions = {
       hostname: 'localhost',
       url: 'https://localhost:' + HTTPS_PORT,
@@ -114,25 +118,27 @@ describe('Client cert strategy integration', function() {
       ca: caCert // don't error when request encounters the server's self-signed cert
     }
 
-    it('rejects authorization without calling the verify callback', function(done) {
+    it('rejects authorization without calling the verify callback', function (done) {
       var app = connect();
 
-      var strategy = new ClientCertStrategy(function(cert, done) {
+      var strategy = new ClientCertStrategy(function (cert, done) {
         assert.fail(); // should not be called
         done();
       });
 
       passport.use(strategy);
       app.use(passport.initialize());
-      app.use(passport.authenticate('client-cert', { session: false }))
+      app.use(passport.authenticate('client-cert', {
+        session: false
+      }))
 
-      app.use(function(req, res) {
+      app.use(function (req, res) {
         assert.fail(); // should not be called
         res.end();
       });
 
-      createHttpsServer(app, function() {
-        request.get(noCertRequestOptions, function(err, res, c) {
+      createHttpsServer(app, function () {
+        request.get(noCertRequestOptions, function (err, res, c) {
           assert.equal(res.statusCode, 401);
           done();
         })
@@ -141,7 +147,7 @@ describe('Client cert strategy integration', function() {
 
   });
 
-  describe('handling a http request', function() {
+  describe('handling a http request', function () {
     var httpRequestOptions = {
       hostname: 'localhost',
       url: 'http://localhost:' + HTTP_PORT,
@@ -149,30 +155,93 @@ describe('Client cert strategy integration', function() {
       method: 'GET',
     }
 
-    it('rejects authorization without calling the verify callback', function(done) {
+    it('rejects authorization without calling the verify callback', function (done) {
       var app = connect();
 
-      var strategy = new ClientCertStrategy(function(cert, done) {
+      var strategy = new ClientCertStrategy(function (cert, done) {
         assert.fail(); // should not be called
         done();
       });
 
       passport.use(strategy);
       app.use(passport.initialize());
-      app.use(passport.authenticate('client-cert', { session: false }))
+      app.use(passport.authenticate('client-cert', {
+        session: false
+      }))
 
-      app.use(function(req, res) {
+      app.use(function (req, res) {
         assert.fail(); // should not be called
         res.end();
       });
 
-      createHttpServer(app, function() {
-        request.get(httpRequestOptions, function(err, res, c) {
+      createHttpServer(app, function () {
+        request.get(httpRequestOptions, function (err, res, c) {
           console.log(err);
           assert.equal(res.statusCode, 401);
           done();
         })
       });
+    });
+
+  });
+
+
+  describe('handling a request with a self-signed client cert', function () {
+    var validRequestOptions; 
+
+    beforeEach(function () {
+      validRequestOptions = {
+        hostname: 'localhost',
+        url: 'https://localhost:' + HTTPS_PORT,
+        path: '/',
+        method: 'GET',
+        key: clientKey,
+        cert: clientCert,
+        rejectUnauthorized: false
+      }
+    });
+
+    it('passes the certificate to the verify callback when allowUnauthorized is true ', function (done) {
+      var app = connect();
+
+      var strategy = new ClientCertStrategy(function (cert, done) {
+        assert.strictEqual(cert.fingerprint,
+          '17:2C:6E:88:E8:F3:6F:41:C7:3A:FE:6D:35:3E:7E:AA:09:09:E4:5B')
+
+        assert.deepEqual(cert.subject, {
+          C: 'UK',
+          ST: 'Gloucestershire',
+          L: 'Cheltenham',
+          O: 'Ripjar',
+          OU: 'Engineering',
+          CN: 'ann',
+          emailAddress: 'ann@example.com'
+        })
+        done(null, {
+          cn: cert.subject.CN
+        })
+      });
+
+      passport.use(strategy);
+      app.use(passport.initialize());
+      app.use(passport.authenticate('client-cert', {
+        session: false,
+        allowUnauthorized: true
+      }))
+
+      app.use(function (req, res) {
+        assert.isTrue(req.isAuthenticated());
+        res.end(JSON.stringify(req.user));
+      });
+
+      createHttpsServer(app, function () {
+        request.get(validRequestOptions, function (err, res) {
+          assert.equal(res.statusCode, 200);
+          assert.deepEqual(res.body, '{"cn":"ann"}');
+          done();
+        })
+      })
+
     });
 
   });

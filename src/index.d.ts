@@ -16,11 +16,12 @@ export interface PeerCertificate {
 }
 
 export interface StrategyOptions {
-  passReqToCallback?: false;
+  passReqToCallback?: boolean;
+  allowUnauthorized?: boolean
 }
 
 export interface StrategyOptionsWithRequest {
-  passReqToCallback: true;
+  passReqToCallback: boolean;
 }
 
 export interface VerifyOptions {

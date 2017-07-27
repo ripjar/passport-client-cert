@@ -21,10 +21,11 @@ util.inherits(ClientCertStrategy, Strategy);
 
 ClientCertStrategy.prototype.authenticate = function(req, options) {
   var that = this;
+  options = options || {};
 
   // Requests must be authorized
   // (i.e. the certificate must be signed by at least one trusted CA)
-  if(!req.socket.authorized) {
+  if(!req.socket.authorized && !options.allowUnauthorized) {
     that.fail();
   } else {
     var clientCert = req.socket.getPeerCertificate();

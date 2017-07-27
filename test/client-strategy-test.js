@@ -58,6 +58,14 @@ describe('Client cert strategy', function() {
       failed.should.eq(true);
     });
 
+
+    it('should fail if the cert is not authorized and options are supplied', function() {
+      req = helpers.dummyReq(false);
+
+      strategy.authenticate(req, {});
+      failed.should.eq(true);
+    });
+
     it('should fail if the cert is missing', function() {
       req = helpers.dummyReq(true, null);
 
