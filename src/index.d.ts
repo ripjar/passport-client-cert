@@ -32,7 +32,7 @@ export interface VerifyCallback {
 }
 
 export interface VerifyFunctionWithRequest {
-  (clientCert: PeerCertificate, req: Request, done: VerifyCallback): void;
+  (req: Request, clientCert: PeerCertificate, done: VerifyCallback): void;
 }
 
 export interface VerifyFunction {
