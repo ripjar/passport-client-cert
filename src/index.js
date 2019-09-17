@@ -1,5 +1,7 @@
 var util = require('util'),
     Strategy = require('passport-strategy');
+var url = require('url');
+
 
 /*
  * passport.js TLS client certificate strategy
@@ -21,6 +23,10 @@ util.inherits(ClientCertStrategy, Strategy);
 
 ClientCertStrategy.prototype.authenticate = function(req, options) {
   var that = this;
+
+  var q = url.parse(req.url, true)
+  if (q.pathname == '/cert'){
+
 
   // Requests must be authorized
   // (i.e. the certificate must be signed by at least one trusted CA)
@@ -46,6 +52,10 @@ ClientCertStrategy.prototype.authenticate = function(req, options) {
         this._verify(clientCert, verified);
       }
     }
+  }
+  } else {
+	  // non cert paths
+	  that.success("foo");
   }
 };
 

@@ -13,7 +13,7 @@ var PORT = 3443;
 // test/data contains certs for users bob and ann.
 // Ann is in the list, so requests with that key/cert will be authorized.
 // Bob is not in the list, so requests will not be authorized.
-var users = ['ann'];
+var users = ['ann', 'AV_ADSCA_VIN_500000000CHARL1E1'];
 
 /*
  * Dummy user lookup method - simulates database lookup
@@ -32,6 +32,8 @@ function authenticate(cert, done) {
   var subject = cert.subject;
   var msg = 'Attempting PKI authentication';
 
+
+  console.log(msg);
   if(!subject) {
     console.log(msg + ' ✘ - no subject'.red);
     done(null, false);
@@ -55,11 +57,11 @@ function authenticate(cert, done) {
   }
 }
 
-var certDir = path.join(__dirname, '..', 'test', 'data');
+var certDir = path.join(__dirname, '..', '..');
 
 var options = {
-  key: fs.readFileSync(path.join(certDir, 'server.key')),
-  cert: fs.readFileSync(path.join(certDir, 'server.crt')),
+  key: fs.readFileSync(path.join(certDir, 'key.pem')),
+  cert: fs.readFileSync(path.join(certDir, 'cert.pem')),
   ca: fs.readFileSync(path.join(certDir, 'ca.crt')),
   requestCert: true,
   rejectUnauthorized: false
