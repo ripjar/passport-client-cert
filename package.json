@@ -35,7 +35,7 @@
     "colors": "1.4.0",
     "connect": "^3.4.1",
     "mocha": "^10.0.0",
-    "passport": "^0.3.2",
+    "passport": "^0.6.0",
     "request": "^2.69.0"
   }
 }
